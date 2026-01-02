@@ -16,21 +16,21 @@ quack [migrate "git+konacodes/test" as t]
 -- Group tests by feature
 quack [t.describe "Math operations"]
 
-quack [t.test "adds numbers correctly" [] ->
+quack [t.test "adds numbers correctly" [] => [
   quack [honk 1 + 1 == 2]
   quack [honk 5 + 5 == 10]
-]
+]]
 
-quack [t.test "multiplies numbers" [] ->
+quack [t.test "multiplies numbers" [] => [
   quack [honk 3 * 4 == 12]
-]
+]]
 
 -- Another group
 quack [t.describe "String operations"]
 
-quack [t.test "concatenates strings" [] ->
+quack [t.test "concatenates strings" [] => [
   quack [honk "hello" + " world" == "hello world"]
-]
+]]
 
 -- Run all tests
 quack [t.run()]
@@ -66,14 +66,14 @@ quack [t.describe "User Authentication"]
 Register a test. The function should contain `honk` assertions.
 
 ```duck
-quack [t.test "validates email format" [] ->
+quack [t.test "validates email format" [] => [
   quack [honk is-valid-email("test@example.com")]
-]
+]]
 
 -- "it" is an alias for "test"
-quack [t.it "rejects invalid emails" [] ->
+quack [t.it "rejects invalid emails" [] => [
   quack [honk is-valid-email("not-an-email") == false]
-]
+]]
 ```
 
 #### `run()`
@@ -115,17 +115,17 @@ While you can use `honk` directly, these helpers provide clearer error messages:
 Example:
 
 ```duck
-quack [t.test "user age validation" [] ->
+quack [t.test "user age validation" [] => [
   quack [let age be 25]
   quack [t.is-greater age 18]
   quack [t.is-less age 100]
-]
+]]
 
-quack [t.test "list operations" [] ->
+quack [t.test "list operations" [] => [
   quack [let items be list(1, 2, 3)]
   quack [t.has items 2]
   quack [t.equals len(items) 3]
-]
+]]
 ```
 
 ## Test Organization
@@ -139,10 +139,10 @@ For small projects, put all tests in one file:
 quack [migrate "git+konacodes/test" as t]
 
 quack [t.describe "Feature A"]
-quack [t.test "..." [] -> ...]
+quack [t.test "..." [] => [...]]
 
 quack [t.describe "Feature B"]
-quack [t.test "..." [] -> ...]
+quack [t.test "..." [] => [...]]
 
 quack [t.run()]
 ```
@@ -165,7 +165,7 @@ Each test file:
 quack [migrate "git+konacodes/test" as t]
 
 quack [t.describe "Math"]
-quack [t.test "..." [] -> ...]
+quack [t.test "..." [] => [...]]
 -- Don't call t.run() here
 ```
 
@@ -208,25 +208,25 @@ quack [define divide taking [a, b] as
 -- The tests
 quack [t.describe "Calculator"]
 
-quack [t.test "adds positive numbers" [] ->
+quack [t.test "adds positive numbers" [] => [
   quack [t.equals add(2, 3) 5]
-]
+]]
 
-quack [t.test "adds negative numbers" [] ->
+quack [t.test "adds negative numbers" [] => [
   quack [t.equals add(-2, -3) -5]
-]
+]]
 
-quack [t.test "adds mixed numbers" [] ->
+quack [t.test "adds mixed numbers" [] => [
   quack [t.equals add(-2, 5) 3]
-]
+]]
 
-quack [t.test "divides numbers" [] ->
+quack [t.test "divides numbers" [] => [
   quack [t.equals divide(10, 2) 5]
-]
+]]
 
-quack [t.test "handles division by zero" [] ->
+quack [t.test "handles division by zero" [] => [
   quack [t.is-nil divide(10, 0)]
-]
+]]
 
 quack [t.run()]
 ```
