@@ -1,0 +1,179 @@
+-- Duck Test Library
+-- A testing framework that builds on honk assertions
+--
+-- Usage:
+--   quack [migrate "git+konacodes/test" as t]
+--   quack [t.test "adds numbers" [] -> honk 1 + 1 == 2]
+--   quack [t.run()]
+
+-- =============================================================================
+-- Internal State
+-- =============================================================================
+
+-- Test registry: list of {name, fn, suite} structs
+quack [let TEST-REGISTRY be list()]
+
+-- Current suite name (for grouping)
+quack [let CURRENT-SUITE be ""]
+
+-- Results tracking
+quack [let RESULTS be list()]
+
+-- Struct for test entries
+quack [struct test-entry with [suite, name, fn]]
+
+-- Struct for test results
+quack [struct test-result with [suite, name, passed, error]]
+
+-- =============================================================================
+-- Colors (disabled for now - Duck doesn't support unicode escapes yet)
+-- =============================================================================
+
+quack [let COLOR-RESET be ""]
+quack [let COLOR-GREEN be ""]
+quack [let COLOR-RED be ""]
+quack [let COLOR-YELLOW be ""]
+quack [let COLOR-DIM be ""]
+quack [let COLOR-BOLD be ""]
+
+-- =============================================================================
+-- Public API
+-- =============================================================================
+
+-- Set the current test suite name
+-- All tests registered after this will be grouped under this suite
+quack [define describe taking [suite-name] as
+  quack [CURRENT-SUITE becomes suite-name]
+]
+
+-- Register a test
+-- The test function should contain honk assertions
+quack [define test taking [name, fn] as
+  quack [let entry be test-entry(CURRENT-SUITE, name, fn)]
+  quack [TEST-REGISTRY push entry]
+]
+
+-- Alias for test (some people prefer "it")
+quack [define it taking [name, fn] as
+  quack [let entry be test-entry(CURRENT-SUITE, name, fn)]
+  quack [TEST-REGISTRY push entry]
+]
+
+-- Run all registered tests and print results
+quack [define run taking [] as
+  quack [let passed be 0]
+  quack [let failed be 0]
+  quack [let current-suite be ""]
+
+  quack [print ""]
+  quack [print f"{COLOR-BOLD}Running tests...{COLOR-RESET}"]
+  quack [print ""]
+
+  quack [for each [entry] in TEST-REGISTRY do
+    -- Print suite header if we're in a new suite
+    quack [if entry.suite != current-suite then
+      quack [if entry.suite != "" then
+        quack [print f"  {COLOR-BOLD}{entry.suite}{COLOR-RESET}"]
+      ]
+      quack [current-suite becomes entry.suite]
+    ]
+
+    -- Run the test wrapped in attempt/rescue
+    quack [attempt
+      quack [let result be entry.fn()]
+      -- If we get here, test passed
+      quack [print f"    {COLOR-GREEN}✓{COLOR-RESET} {entry.name}"]
+      quack [passed becomes passed + 1]
+    rescue err
+      -- Test failed (honk assertion failed)
+      quack [print f"    {COLOR-RED}✗{COLOR-RESET} {entry.name}"]
+      quack [print f"      {COLOR-DIM}{err}{COLOR-RESET}"]
+      quack [failed becomes failed + 1]
+    ]
+  ]
+
+  -- Print summary
+  quack [print ""]
+  quack [let total be passed + failed]
+
+  quack [if failed == 0 then
+    quack [print f"  {COLOR-GREEN}{COLOR-BOLD}{passed} passing{COLOR-RESET}"]
+  otherwise
+    quack [print f"  {COLOR-GREEN}{passed} passing{COLOR-RESET}"]
+    quack [print f"  {COLOR-RED}{failed} failing{COLOR-RESET}"]
+  ]
+
+  quack [print ""]
+
+  -- Return success/failure
+  quack [return failed == 0]
+]
+
+-- Clear all registered tests (useful for running multiple test files)
+quack [define clear taking [] as
+  -- Reset by creating new empty list
+  quack [while len(TEST-REGISTRY) > 0 do
+    quack [let unused be pop(TEST-REGISTRY)]
+  ]
+  quack [CURRENT-SUITE becomes ""]
+]
+
+-- =============================================================================
+-- Utility Assertions (optional helpers beyond honk)
+-- =============================================================================
+
+-- Assert two values are equal
+quack [define equals taking [actual, expected] as
+  quack [honk actual == expected f"Expected {expected}, got {actual}"]
+]
+
+-- Assert two values are not equal
+quack [define not-equals taking [actual, expected] as
+  quack [honk actual != expected f"Expected {actual} to not equal {expected}"]
+]
+
+-- Assert value is true
+quack [define is-true taking [value] as
+  quack [honk value == true "Expected true"]
+]
+
+-- Assert value is false
+quack [define is-false taking [value] as
+  quack [honk value == false "Expected false"]
+]
+
+-- Assert value is nil
+quack [define is-nil taking [value] as
+  quack [honk value == nil "Expected nil"]
+]
+
+-- Assert value is not nil
+quack [define is-not-nil taking [value] as
+  quack [honk value != nil "Expected non-nil value"]
+]
+
+-- Assert value is greater than
+quack [define is-greater taking [actual, expected] as
+  quack [honk actual > expected f"Expected {actual} > {expected}"]
+]
+
+-- Assert value is less than
+quack [define is-less taking [actual, expected] as
+  quack [honk actual < expected f"Expected {actual} < {expected}"]
+]
+
+-- Assert list contains value
+quack [define has taking [list-val, item] as
+  quack [honk contains(list-val, item) f"Expected list to contain {item}"]
+]
+
+-- Assert string contains substring
+quack [define includes taking [str, substr] as
+  quack [honk contains(str, substr) f"Expected '{str}' to include '{substr}'"]
+]
+
+-- =============================================================================
+-- Load Message
+-- =============================================================================
+
+quack [print f"{COLOR-DIM}Duck Test Library loaded. Ready to test!{COLOR-RESET}"]

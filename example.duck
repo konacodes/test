@@ -1,0 +1,97 @@
+-- Example: Testing the test library
+-- Run with: goose run example.duck
+
+quack [migrate "./lib.duck" as t]
+
+-- =============================================================================
+-- Test the basics
+-- =============================================================================
+
+quack [t.describe "Basic Assertions"]
+
+quack [t.test "honk passes for true conditions" [] => [
+  quack [honk 1 + 1 == 2]
+  quack [honk true]
+  quack [honk "hello" == "hello"]
+]]
+
+quack [t.test "equals helper works" [] => [
+  quack [t.equals 5 5]
+  quack [t.equals "duck" "duck"]
+]]
+
+quack [t.test "is-true and is-false work" [] => [
+  quack [t.is-true true]
+  quack [t.is-false false]
+]]
+
+-- =============================================================================
+-- Test comparisons
+-- =============================================================================
+
+quack [t.describe "Comparison Assertions"]
+
+quack [t.test "is-greater works" [] => [
+  quack [t.is-greater 10 5]
+  quack [t.is-greater 100 99]
+]]
+
+quack [t.test "is-less works" [] => [
+  quack [t.is-less 5 10]
+  quack [t.is-less -5 0]
+]]
+
+-- =============================================================================
+-- Test nil checks
+-- =============================================================================
+
+quack [t.describe "Nil Assertions"]
+
+quack [t.test "is-nil works" [] => [
+  quack [t.is-nil nil]
+]]
+
+quack [t.test "is-not-nil works" [] => [
+  quack [t.is-not-nil 42]
+  quack [t.is-not-nil "hello"]
+  quack [t.is-not-nil list()]
+]]
+
+-- =============================================================================
+-- Test collections
+-- =============================================================================
+
+quack [t.describe "Collection Assertions"]
+
+quack [t.test "has checks list membership" [] => [
+  quack [let nums be list(1, 2, 3, 4, 5)]
+  quack [t.has nums 3]
+  quack [t.has nums 1]
+]]
+
+quack [t.test "includes checks substrings" [] => [
+  quack [t.includes "hello world" "world"]
+  quack [t.includes "duck-lang" "duck"]
+]]
+
+-- =============================================================================
+-- Test a deliberate failure (uncomment to see failure output)
+-- =============================================================================
+
+-- quack [t.describe "Deliberate Failures"]
+--
+-- quack [t.test "this test will fail" [] => [
+--   quack [honk 1 == 2 "One does not equal two"]
+-- ]]
+
+-- =============================================================================
+-- Run all tests
+-- =============================================================================
+
+quack [let success be t.run()]
+
+quack [if success then
+  quack [print "All tests passed! The goose is pleased."]
+otherwise
+  quack [print "Some tests failed. The goose is disappointed."]
+]
